@@ -1,0 +1,26 @@
+{
+  "id": "/",
+  "short_name": "NS Guruji",
+  "name": "NS Guruji - सरकारी नौकरी व योजना",
+  "description": "Latest Hindi Sarkari Jobs, Admit Cards, Results and Govt Schemes",
+  "scope": "/",
+  "start_url": "/?source=pwa",
+  "background_color": "#b71c1c",
+  "theme_color": "#b71c1c",
+  "display": "standalone",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/ns_guruji_logo.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/ns_guruji_logo.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512",
+      "purpose": "maskable"
+    }
+  ]
+}

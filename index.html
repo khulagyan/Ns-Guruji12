@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NS Guruji</title>
+    <meta name="description" content="Production-ready Android app and interactive preview for NS Guruji (nsguruji.com) - Latest Hindi Sarkari Jobs, Results, Admit Cards, and Govt Schemes." />
+    <meta property="og:title" content="NS Guruji" />
+    <meta property="og:description" content="Production-ready Android app and interactive preview for NS Guruji (nsguruji.com) - Latest Hindi Sarkari Jobs, Results, Admit Cards, and Govt Schemes." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/png" href="/ns_guruji_logo.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#b71c1c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="NS Guruji" />
+    <link rel="apple-touch-icon" href="/ns_guruji_logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

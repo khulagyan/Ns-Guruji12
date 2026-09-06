@@ -1,0 +1,7 @@
+{
+  "name": "NS Guruji",
+  "description": "Production-ready Android app and interactive preview for NS Guruji (nsguruji.com) - Latest Hindi Sarkari Jobs, Results, Admit Cards, and Govt Schemes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
