@@ -21,41 +21,39 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'gradle'
 
-      - name: Set up Gradle 8.7
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.7'
-
-      - name: Ensure Gradle Wrapper Exists
+      - name: Prepare Gradle Wrapper & Permissions
         run: |
           TARGET_DIR="."
-          if [ -d "android" ]; then
+          if [ -d "android" ] && [ -f "android/build.gradle.kts" ]; then
             TARGET_DIR="android"
           fi
           mkdir -p "$TARGET_DIR/gradle/wrapper"
-          if [ ! -f "$TARGET_DIR/gradle/wrapper/gradle-wrapper.jar" ]; then
-            echo "Downloading gradle-wrapper.jar..."
+          if [ ! -s "$TARGET_DIR/gradle/wrapper/gradle-wrapper.jar" ]; then
+            echo "Fetching official gradle-wrapper.jar..."
             curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar" -o "$TARGET_DIR/gradle/wrapper/gradle-wrapper.jar"
           fi
-          if [ -f "$TARGET_DIR/gradlew" ]; then
-            chmod +x "$TARGET_DIR/gradlew"
+          if [ ! -f "$TARGET_DIR/gradlew" ] || [ $(wc -c < "$TARGET_DIR/gradlew") -lt 1000 ]; then
+            echo "Fetching official gradlew script..."
+            curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradlew" -o "$TARGET_DIR/gradlew"
           fi
+          chmod +x "$TARGET_DIR/gradlew"
 
-      - name: Build Debug APK
+      - name: Build Debug APK with Gradle
         run: |
-          if [ -d "android" ]; then
-            cd android
-            gradle assembleDebug --stacktrace
-          else
-            gradle assembleDebug --stacktrace
+          TARGET_DIR="."
+          if [ -d "android" ] && [ -f "android/build.gradle.kts" ]; then
+            TARGET_DIR="android"
           fi
+          cd "$TARGET_DIR"
+          ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: Upload APK as Artifact (Direct Download Link)
         uses: actions/upload-artifact@v4
         with:
           name: NS-Guruji-App-APK
           path: |
-            android/app/build/outputs/apk/debug/app-debug.apk
-            app/build/outputs/apk/debug/app-debug.apk
+            **/build/outputs/apk/debug/app-debug.apk
+            **/build/outputs/apk/debug/*.apk
           retention-days: 14

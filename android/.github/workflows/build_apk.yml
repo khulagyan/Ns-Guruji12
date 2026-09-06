@@ -23,15 +23,27 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Grant Execute Permission for Gradlew
-        run: chmod +x gradlew
+      - name: Prepare Gradle Wrapper & Permissions
+        run: |
+          mkdir -p gradle/wrapper
+          if [ ! -s "gradle/wrapper/gradle-wrapper.jar" ]; then
+            echo "Fetching official gradle-wrapper.jar..."
+            curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar" -o gradle/wrapper/gradle-wrapper.jar
+          fi
+          if [ ! -f "gradlew" ] || [ $(wc -c < "gradlew") -lt 1000 ]; then
+            echo "Fetching official gradlew script..."
+            curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradlew" -o gradlew
+          fi
+          chmod +x gradlew
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Build Debug APK with Gradle
+        run: ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: Upload APK as Artifact (Direct Download Link)
         uses: actions/upload-artifact@v4
         with:
           name: NS-Guruji-App-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: |
+            **/build/outputs/apk/debug/app-debug.apk
+            **/build/outputs/apk/debug/*.apk
           retention-days: 14

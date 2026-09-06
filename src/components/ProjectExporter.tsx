@@ -44,13 +44,18 @@ export const ProjectExporter: React.FC = () => {
       // Loop through all files and add them to zip
       for (const [path, content] of Object.entries(ANDROID_FILES)) {
         if (content === '[Binary Asset - included in ZIP]' || content.startsWith('[Binary')) {
-          // Fetch the official logo asset from public folder
           try {
-            const logoRes = await fetch('/ns_guruji_logo.png');
-            const logoBlob = await logoRes.blob();
-            zip.file(path, logoBlob);
+            if (path.endsWith('.jar')) {
+              const jarRes = await fetch('/gradle-wrapper.jar');
+              const jarBlob = await jarRes.blob();
+              zip.file(path, jarBlob);
+            } else {
+              const logoRes = await fetch('/ns_guruji_logo.png');
+              const logoBlob = await logoRes.blob();
+              zip.file(path, logoBlob);
+            }
           } catch (e) {
-            console.error('Failed to fetch binary logo, using empty file', e);
+            console.error('Failed to fetch binary asset for ' + path, e);
             zip.file(path, '');
           }
         } else {
