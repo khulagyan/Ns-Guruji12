@@ -5,7 +5,7 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch: # Allows manual trigger from GitHub web UI with 1 click
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,22 +21,34 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
-      - name: Grant Execute Permission for Gradlew
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.7'
+
+      - name: Ensure Gradle Wrapper Exists
         run: |
-          if [ -f "android/gradlew" ]; then
-            chmod +x android/gradlew
-          elif [ -f "gradlew" ]; then
-            chmod +x gradlew
+          TARGET_DIR="."
+          if [ -d "android" ]; then
+            TARGET_DIR="android"
+          fi
+          mkdir -p "$TARGET_DIR/gradle/wrapper"
+          if [ ! -f "$TARGET_DIR/gradle/wrapper/gradle-wrapper.jar" ]; then
+            echo "Downloading gradle-wrapper.jar..."
+            curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar" -o "$TARGET_DIR/gradle/wrapper/gradle-wrapper.jar"
+          fi
+          if [ -f "$TARGET_DIR/gradlew" ]; then
+            chmod +x "$TARGET_DIR/gradlew"
           fi
 
       - name: Build Debug APK
         run: |
           if [ -d "android" ]; then
-            cd android && ./gradlew assembleDebug --stacktrace
+            cd android
+            gradle assembleDebug --stacktrace
           else
-            ./gradlew assembleDebug --stacktrace
+            gradle assembleDebug --stacktrace
           fi
 
       - name: Upload APK as Artifact (Direct Download Link)
