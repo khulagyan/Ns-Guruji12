@@ -1,4 +1,4 @@
-name: Build Android APK (All-In-One Self Healing)
+name: Build Android APK (No Android Studio Needed)
 
 on:
   push:
@@ -8,85 +8,51 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-apk:
-    name: Auto Generate Android APK
+  build:
+    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
-      - name: 1. Checkout Code
+      - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: 2. Setup Java 17
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
           cache: 'gradle'
 
-      - name: 3. Auto Fix Gradle Wrapper & Google Services
+      - name: Prepare Gradle Wrapper & Permissions
         run: |
-          echo "Finding project directory..."
           TARGET_DIR="."
           if [ -d "android" ] && [ -f "android/build.gradle.kts" ]; then
             TARGET_DIR="android"
           fi
-          echo "Target directory is: $TARGET_DIR"
-
-          # 1. Create Wrapper folders
           mkdir -p "$TARGET_DIR/gradle/wrapper"
-          
-          # 2. Download official Gradle Wrapper JAR if missing
           if [ ! -s "$TARGET_DIR/gradle/wrapper/gradle-wrapper.jar" ]; then
-            echo "Downloading gradle-wrapper.jar..."
+            echo "Fetching official gradle-wrapper.jar..."
             curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar" -o "$TARGET_DIR/gradle/wrapper/gradle-wrapper.jar"
           fi
-
-          # 3. Download official gradlew script if missing or corrupted
           if [ ! -f "$TARGET_DIR/gradlew" ] || [ $(wc -c < "$TARGET_DIR/gradlew") -lt 1000 ]; then
-            echo "Downloading official gradlew..."
+            echo "Fetching official gradlew script..."
             curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradlew" -o "$TARGET_DIR/gradlew"
           fi
           chmod +x "$TARGET_DIR/gradlew"
 
-          # 4. Auto-generate google-services.json if missing in any app folder
-          for dir in "$TARGET_DIR/app" "android/app" "app"; do
-            if [ -d "$dir" ] && [ ! -f "$dir/google-services.json" ]; then
-              echo "Generating missing google-services.json in $dir..."
-              cat << 'EOF' > "$dir/google-services.json"
-{
-  "project_info": {
-    "project_number": "123456789000",
-    "project_id": "ns-guruji-app",
-    "storage_bucket": "ns-guruji-app.appspot.com"
-  },
-  "client": [
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:123456789000:android:abcdef1234567890",
-        "android_client_info": {
-          "package_name": "com.nsguruji.app"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDummyKeyReplaceWithYourOwnFirebaseKey"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    }
-  ],
-  "configuration_version": "1"
-}
-EOF
+      - name: Ensure google-services.json Exists
+        run: |
+          JSON_CONTENT='{"project_info":{"project_number":"123456789000","project_id":"ns-guruji-app","storage_bucket":"ns-guruji-app.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456789000:android:abcdef1234567890","android_client_info":{"package_name":"com.nsguruji.app"}},"oauth_client":[],"api_key":[{"current_key":"AIzaSyDummyKeyReplaceWithYourOwnFirebaseKey"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}'
+          for dir in "android/app" "app" "."; do
+            if [ -d "$dir" ] && [ -f "$dir/build.gradle.kts" ]; then
+              if [ ! -f "$dir/google-services.json" ]; then
+                echo "Creating google-services.json in $dir"
+                echo "$JSON_CONTENT" > "$dir/google-services.json"
+              fi
             fi
           done
 
-      - name: 4. Compile & Build APK
+      - name: Build Debug APK with Gradle
         run: |
           TARGET_DIR="."
           if [ -d "android" ] && [ -f "android/build.gradle.kts" ]; then
@@ -95,7 +61,7 @@ EOF
           cd "$TARGET_DIR"
           ./gradlew assembleDebug --stacktrace --no-daemon
 
-      - name: 5. Provide Direct Download Link for APK
+      - name: Upload APK as Artifact (Direct Download Link)
         uses: actions/upload-artifact@v4
         with:
           name: NS-Guruji-App-APK
