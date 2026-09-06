@@ -40,6 +40,47 @@ jobs:
           fi
           chmod +x "$TARGET_DIR/gradlew"
 
+      - name: Ensure google-services.json Exists
+        run: |
+          for dir in "android/app" "app" "."; do
+            if [ -d "$dir" ] && [ -f "$dir/build.gradle.kts" ]; then
+              if [ ! -f "$dir/google-services.json" ]; then
+                echo "Creating google-services.json in $dir"
+                cat << 'EOF' > "$dir/google-services.json"
+{
+  "project_info": {
+    "project_number": "123456789000",
+    "project_id": "ns-guruji-app",
+    "storage_bucket": "ns-guruji-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:123456789000:android:abcdef1234567890",
+        "android_client_info": {
+          "package_name": "com.nsguruji.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDummyKeyReplaceWithYourOwnFirebaseKey"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
+EOF
+              fi
+            fi
+          done
+
       - name: Build Debug APK with Gradle
         run: |
           TARGET_DIR="."
